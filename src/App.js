@@ -11,8 +11,8 @@ export default function App() {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState("");
   const fetchQuery = React.useCallback(
-    throttle(async e => {
-      const { value } = e.target;
+    throttle(async ({ target }) => {
+      const { value } = target;
       if (!value) {
         setData([]);
         return;
@@ -25,6 +25,7 @@ export default function App() {
       try {
         const { data } = await get("/api?q=" + value);
         setData(data.predictions);
+        setError("");
         queryCache.set(value, data.predictions);
       } catch (e) {
         setError(e.toString());
