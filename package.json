@@ -2,7 +2,11 @@
   "name": "autocomplete-test",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:3001",
   "dependencies": {
+    "axios": "^0.19.0",
+    "lodash.throttle": "^4.1.1",
+    "quick-lru": "^4.0.1",
     "react": "^16.10.1",
     "react-dom": "^16.10.1",
     "react-scripts": "3.1.2"
