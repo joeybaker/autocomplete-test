@@ -1,0 +1,15 @@
+.container {
+  width: 50ch;
+}
+
+.list {
+  display: none;
+  padding: 0.5em;
+  margin: 0;
+  list-style: none;
+  border: 1px solid #ddd;
+}
+
+.container:focus-within .list:not(:empty) {
+  display: block;
+}
