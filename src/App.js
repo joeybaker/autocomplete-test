@@ -7,12 +7,19 @@ import LRU from "quick-lru";
 const queryCache = new LRU({ maxSize: 100 });
 
 export default function App() {
-  const [data, setData] = React.useState([]);
+  const [data, setDataState] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState("");
+  const queryRef = React.useRef("");
+  const setData = React.useCallback(
+    d => {
+      setDataState(d);
+      setError("");
+    },
+    [setDataState, setError]
+  );
   const fetchQuery = React.useCallback(
-    throttle(async ({ target }) => {
-      const { value } = target;
+    throttle(async value => {
       if (!value) {
         setData([]);
         return;
@@ -24,8 +31,10 @@ export default function App() {
       setLoading(true);
       try {
         const { data } = await get("/api?q=" + value);
-        setData(data.predictions);
-        setError("");
+        // prevent races
+        if (queryRef.current === value) {
+          setData(data.predictions);
+        }
         queryCache.set(value, data.predictions);
       } catch (e) {
         setError(e.toString());
@@ -34,16 +43,32 @@ export default function App() {
     }, 50),
     [setData]
   );
+  const onChange = React.useCallback(
+    ({ target: { value } }) => {
+      queryRef.current = value;
+      fetchQuery(value);
+    },
+    [fetchQuery, queryRef]
+  );
+
   return (
     <div className={styles.container}>
-      <input type="search" onInput={fetchQuery} />
+      <input type="search" onChange={onChange} value={queryRef.current} />
       {loading && <mark>…</mark>}
       {error ? (
         <div>{error}</div>
       ) : (
         <ul className={styles.list}>
           {data.map(({ id, structured_formatting: { main_text: text } }) => (
-            <li key={id}>{text}</li>
+            // TODO: keybaord nav
+            <li
+              key={id}
+              onMouseDown={() => {
+                onChange({ target: { value: text } });
+              }}
+            >
+              {text}
+            </li>
           ))}
         </ul>
       )}
